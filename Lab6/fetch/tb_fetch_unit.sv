@@ -84,10 +84,9 @@ module tb_fetch_unit;
 
   // Assertion 1
 
-  sequence s_reset; (!dut.rst_n); endsequence
-
   property reset_behavior;
-    s_reset |=> (pc == 0);
+    @(posedge clk)
+    (!dut.rst_n) |-> (dut.pc == 0);
   endproperty
 
   check_reset_behavior :
@@ -95,10 +94,9 @@ module tb_fetch_unit;
 
   // Assertion 2
 
-  sequence s_branch; (dut.branch_en); endsequence
-
   property branch_priority;
-    s_branch |=> (pc == $past(
+    @(posedge clk)
+    (dut.branch_en) |=> (pc == $past(
         dut.branch_addr
     ));
   endproperty
@@ -108,10 +106,9 @@ module tb_fetch_unit;
 
   // Assertion 3
 
-  sequence s_pc_en_no_branch; (!dut.branch_en && dut.pc_en); endsequence
-
   property pc_increment;
-    s_pc_en_no_branch |=> (pc == $past(
+    @(posedge clk)
+    (!dut.branch_en && dut.pc_en) |-> (pc == $past(
         pc
     ) + 2);
   endproperty
@@ -121,10 +118,9 @@ module tb_fetch_unit;
 
   // Assertion 4
 
-  sequence s_enables_idle; (!dut.branch_en && !dut.pc_en); endsequence
-
   property stable_pc;
-    s_enables_idle |=> (pc == $past(
+    @(posedge clk)
+    (!dut.branch_en && !dut.pc_en) |=> (pc == $past(
         pc
     ));
   endproperty
@@ -135,6 +131,7 @@ module tb_fetch_unit;
   // Assertion 5
 
   property instruction_consistency;
+    @(posedge clk)
     dut.instr == dut.mem[pc];
   endproperty
 
@@ -144,6 +141,7 @@ module tb_fetch_unit;
   // Assertion 6
 
   property pc_inside_range;
+    @(posedge clk)
     dut.pc inside {[0 : 255]};
   endproperty
 
